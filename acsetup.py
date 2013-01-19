@@ -5,10 +5,7 @@ from fsitem import current, Folder, File
 
 data_paths = []
 
-d = current()
-
-p = d.parent()
-while p.path is not d.path:
+for d in current().ancestors():
 	for item in d.folders():
 		b = item.basename()
 		if b == "Data":
@@ -25,8 +22,6 @@ while p.path is not d.path:
 			if not foundactools:
 				if item.path not in sys.path:
 					sys.path.append(item.path)
-	d = p
-	p = d.parent()
 
 if __name__ == "__main__":
 	print "Code:"

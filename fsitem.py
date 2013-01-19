@@ -176,6 +176,14 @@ class FSItem(FSPath):
 	def parent(self):
 		p = self.dirname()
 		return Folder(p.path)
+	def ancestors(self):
+		c = FSItem(self.path)
+		p = c.parent()
+		while c.path is not p.path:
+			yield p
+			c = p
+			p = c.parent()
+		
 	def common_parent(self,other):
 		l = FSPathList()
 		l.append(self)
@@ -210,6 +218,11 @@ class Folder(FSItem):
 				yield Link(p)
 			else:
 				yield FSItem(p)
+	def __getitem__(self,name):
+		for item in self.items():
+			if item.basename() == name:
+				return item
+		raise IndexError, (name,self.path)
 	def folders(self):
 		for item in self.listdir():
 			p = os.path.abspath(os.path.join(self.path,item))
