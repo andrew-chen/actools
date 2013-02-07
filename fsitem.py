@@ -18,10 +18,32 @@
 
 import os
 import os.path
+import fnmatch
+
+def specialized(p):
+	if os.path.isdir(p):
+		return Folder(p)
+	elif os.path.isfile(p):
+		return File(p)
+	elif os.path.islink(p):
+		return Link(p)
+	else:
+		return FSItem(p)
+
+def fs_object(p):
+	p = os.path.abspath(p)
+	return specialized(p)
 
 class FSPath(object):
 	def __init__(self,path):
 		self.path = path
+	def __sub__(self,other):
+		if (self.path.startswith(other.path)):
+			r = self.path[len(other.path):]
+			assert((other.path+r) == self.path)
+			return r[1:]
+		else:
+			raise IndexError, (other.path,self.path)
 	
 	# from os.path
 	def abspath(self):
@@ -210,18 +232,13 @@ class Folder(FSItem):
 	def items(self):
 		for item in self.listdir():
 			p = os.path.abspath(os.path.join(self.path,item))
-			if os.path.isdir(p):
-				yield Folder(p)
-			elif os.path.isfile(p):
-				yield File(p)
-			elif os.path.islink(p):
-				yield Link(p)
-			else:
-				yield FSItem(p)
+			yield specialized(p)
 	def __getitem__(self,name):
 		for item in self.items():
 			if item.basename() == name:
 				return item
+		if name == "":
+			return self
 		raise IndexError, (name,self.path)
 	def folders(self):
 		for item in self.listdir():
@@ -245,6 +262,14 @@ class Folder(FSItem):
 			return File(t)
 		else:
 			raise NotImplementedError
+	
+	def file_with_name(self,name):
+		try:
+			the_file = self[name]
+		except IndexError:
+			the_file = self.create(File,name)
+		return the_file
+
 
 class Line(object):
 	def __init__(self,file,number,text):
@@ -301,7 +326,7 @@ def root():
 def home():
 	return Folder(os.path.expanduser("~"))
 
-def FSItemList(list):
+def FSItemList(FSPathList):
 	def common_parent(self):
 		r = None
 		for item in self:
@@ -310,6 +335,8 @@ def FSItemList(list):
 			else:
 				r = r.common_parent(item)
 		return r
+	def filter(self,pattern):
+		return fnmatch.filter(self,pattern)
 
 if __name__ == "__main__":
 	print "current has "
