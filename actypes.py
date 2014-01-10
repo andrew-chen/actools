@@ -1,3 +1,11 @@
+class dummy_object(object):
+	"""
+		a dummy object
+		
+		when we want an object, but we don't care about assigning any methods to it
+	"""
+	pass
+
 def none():
 	"""
 		a constructor for None

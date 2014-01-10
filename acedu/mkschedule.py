@@ -1,5 +1,10 @@
 import os
 import os.path
+from acedu.paths import position
+from declare import test_for
+import sys
+from actypes import dummy_object
+
 """
 	Reads the lesson plan files,
 	and assumes the have the following format:
@@ -49,16 +54,27 @@ class LessonPlanFile(object):
 			self.other_stuff = other_stuff
 	def print_text_line(self):
 		print str(self.month)+", "+str(self.day)+", "+str(self.summary)
+	def print_with_template_engine(self,template_engine ):
+		template_engine(self.month,self.day,self.summary)
+		
 
-def process_list_of_lesson_plan_file_full_paths(args):
+def process_list_of_lesson_plan_file_full_paths(args,template_engine = 0):
+	if template_engine == 0:
+		def print_the_arg(arg):
+			print arg
+		def print_three_args(arg1,arg2,arg3):
+			print str(arg1)+", "+str(arg2)+", "+str(arg3)
+		template_engine = dummy_object()
+		template_engine.print_header = print_the_arg
+		template_engine.lesson_plan_printer = print_three_args
 	files = sorted(args)
 	lesson_plans = map(LessonPlanFile,files)
-	print lesson_plans[0].class_header
+	template_engine.print_header(lesson_plans[0].class_header)
 	# eventually use itr and group_while to get months together and such
 	for lesson_plan in lesson_plans:
-		lesson_plan.print_text_line()
+		lesson_plan.print_with_template_engine(template_engine.lesson_plan_printer)
 
-def process_lesson_plans_for_course(the_year,the_semester,the_course):
+def process_lesson_plans_for_course(the_year,the_semester,the_course,template_engine = 0):
 	path = "/Users/chenan/Documents/Courses/"
 	path = path + str(the_year) + "/" + the_semester + " " + str(the_year)
 	path = path + "/" + the_course + "/Lesson Plans"
@@ -67,7 +83,31 @@ def process_lesson_plans_for_course(the_year,the_semester,the_course):
 	for filename in filenames:
 		if filename != ".DS_Store":
 			lesson_plan_filenames.append(os.path.join(path,filename))
-	process_list_of_lesson_plan_file_full_paths(lesson_plan_filenames)
+	process_list_of_lesson_plan_file_full_paths(lesson_plan_filenames,template_engine)
+
+def process_lesson_plans_for_current_courses(template_engine = 0):
+	p = position()
+	course_test = test_for.course
+	semester_test = test_for.semester
+	if course_test(p):
+		if not template_engine: print "A Single Course"
+		courses = [p]
+		year = p.year
+	elif semester_test(p):
+		if not template_engine: print (p.year,p.semester)
+		year = p.year
+		courses = p.courses()
+	else:
+		print "error, neither in course nor semester directory"
+		sys.exit(1)
+
+	classes = {}
+
+	for course in courses:
+		name = course.basename()
+		#print name
+		classes[name] = course
+		process_lesson_plans_for_course(course.year,course.semester,name,template_engine)
 
 if __name__ == "__main__":
 	process_lesson_plans_for_course(2013,"Spring","CSIS 320")
