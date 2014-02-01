@@ -31,6 +31,10 @@ class _Course(Decorator):
 class _Semester(Decorator):
 	def is_semester(self):
 		return True
+	def data(self):
+		return self.__getitem__("Data")
+	def code(self):
+		return self.__getitem__("Code")
 	def course(self,name):
 		c = _Course(self.__getitem__(name))
 		c.semester = self.semester
