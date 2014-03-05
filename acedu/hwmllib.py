@@ -156,6 +156,8 @@ def process_problem_scores(code_list):
 	
 	another_count_by_groups = 0
 
+	print "Answer ID Number, Book Edition, Student Name, Problem Number, Problem Order, Score, Notes"
+
 	for key,value in problem_groups.items():
 		book_edition,chapter,problem_number = key
 		for item in value:
