@@ -10,6 +10,8 @@ sys.stdout = codecs.getwriter(locale.getpreferredencoding())(sys.stdout)
 
 import acsetup
 import acedu.paths
+from acedu.paths import meta
+
 from fsitem import File
 
 from acminidom import getText, attributesOf, parse
@@ -26,7 +28,13 @@ import string
 
 class HWML_processor(object):
 
-	def prepare_for_processing(self):
+	def __init__(self):
+		self.prepared = False
+
+	def prepare_for_processing(self,verbose=True):
+	
+		if self.prepared:
+			return self.code_list
 
 		self.d = acedu.paths.corresponding()
 
@@ -52,14 +60,14 @@ class HWML_processor(object):
 		if True:
 			for assignment in self.assignments:
 				attrs = attributesOf(assignment)
-				print attrs["student"]
-				print attrs["book_edition"]
-				print attrs["chapter"]
+				if verbose: print attrs["student"]
+				if verbose: print attrs["book_edition"]
+				if verbose: print attrs["chapter"]
 				problems = assignment.getElementsByTagName("problem")
 				for problem in problems:
 					attrs = attributesOf(problem)
-					print attrs["number"]
-					print getText(problem.childNodes)
+					if verbose: print attrs["number"]
+					if verbose: print getText(problem.childNodes)
 
 		self.assignments = map(Assignment,self.assignments)
 
@@ -69,9 +77,11 @@ class HWML_processor(object):
 		#print self.book_editions
 
 		for assignment in self.assignments:
-			assert(assignment.chapter == int(sys.argv[1]))
+			if(assignment.chapter != int(sys.argv[1])):
+				print assignment.student
+				assert(assignment.chapter == int(sys.argv[1]))
 			num_probs = len(assignment.problems)
-			print "num_probs was "+str(num_probs)+" for student "+assignment.student
+			if verbose: print "num_probs was "+str(num_probs)+" for student "+assignment.student
 
 		self.problems = []
 
@@ -82,7 +92,7 @@ class HWML_processor(object):
 				prob = (prob_id,prob_data)
 				self.problems.append(prob)
 
-		print len(self.problems)
+		if verbose: print len(self.problems)
 		
 		self.problem_groups = defaultdict(list)
 
@@ -95,32 +105,45 @@ class HWML_processor(object):
 			self.code_list.append((prob_code,prob_code_data))
 			self.problem_groups[prob_id].append(prob_code+"\n"+("="*50)+"\n"+problem_text)
 
-		self.p.pprint(self.code_list)
+		if verbose: self.p.pprint(self.code_list)
 
 		#print "by groups"
 		self.count_by_groups = 0
 		for group in self.problem_groups.values():
 			self.count_by_groups += len(group)
-		print self.count_by_groups
+		if verbose: print self.count_by_groups
 		
-	def process_hwml(self):
-		self.prepare_for_processing()
+		self.prepared = True
+		
+		return self.code_list
+		
+	def process_hwml(self,verbose=True):
+		self.prepare_for_processing(verbose)
 
 		another_count_by_groups = 0
 
+		result = {"value":""}
+
+		def output(value):
+			if verbose:
+				print value
+			result["value"] = result["value"] + str(value) + "\n"
+
 		for key,value in self.problem_groups.items():
 			book_edition,chapter,problem_number = key
-			print "In book edition "+str(book_edition)+" on problem "+problem_number
+			output( "In book edition "+str(book_edition)+" on problem "+problem_number )
 
 			for item in value:
-				print "="*50
-				print item
-				print "="*50
+				output( "="*50 )
+				output( item )
+				output( "="*50 )
 				another_count_by_groups += 1
-				print "problem count is now: "+str(another_count_by_groups)
+				output( "problem count is now: "+str(another_count_by_groups) )
+				
+		return result["value"]
 			
-	def detect_cheating(self):
-		self.prepare_for_processing()
+	def detect_cheating(self,verbose=True):
+		self.prepare_for_processing(verbose)
 		
 		problem_text_students = defaultdict(list)
 		
@@ -129,12 +152,22 @@ class HWML_processor(object):
 				p_text = string.join(string.split(problem.text))
 				problem_text_students[p_text].append(assignment.student)
 
+		results = []
+
 		for t,s in problem_text_students.items():
 			if len(s) > 1:
-				print (t,s)
+				if verbose: print (t,s)
+				results.append((t,s))
 
-def process_problem_scores(code_list):
+		return results
+
+def process_problem_scores(code_list,the_file = False):
 	problems = []
+
+	if the_file:
+		pass
+	else:
+		the_file = meta().file_with_name("problem_scores.csv").open("w")
 
 	class problem(object):
 		def __init__(self,student,book_edition,chapter,number,code):
@@ -152,17 +185,25 @@ def process_problem_scores(code_list):
 		(prob_code,prob_code_data) = code_item
 		(assignment_student,prob_id) = prob_code_data
 		(book_edition,chapter,problem_number) = prob_id
-		problem_groups[prob_id].append(problem(assignment_student,book_edition,chapter,problem_number,prob_code))
+		problem_groups[prob_id].append( problem( assignment_student, book_edition, chapter, problem_number, prob_code ) )
 	
 	another_count_by_groups = 0
 
-	print "Answer ID Number, Book Edition, Student Name, Problem Number, Problem Order, Score, Notes"
+	header = "Answer ID Number, Book Edition, Student Name, Problem Number, Problem Order, Score, Notes"
+	if the_file:
+		the_file.write(header+"\n")
+	else:
+		print header
 
 	for key,value in problem_groups.items():
 		book_edition,chapter,problem_number = key
 		for item in value:
 			another_count_by_groups += 1
-			print str(item.code)+", "+str(book_edition)+", "+str(item.student)+", "+str(item.number)+", "+str(another_count_by_groups)
+			to_write = str(item.code)+", "+str(book_edition)+", "+str(item.student)+", "+str(item.number)+", "+str(another_count_by_groups)
+			if the_file:
+				the_file.write(to_write+"\n")
+			else:
+				print to_write
 		
 		
 def process_hwml():

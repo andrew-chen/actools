@@ -79,6 +79,11 @@ def corresponding(where=None):
 	s = where - p.code()
 	return d[s]
 
+def meta(where=None):
+	base = corresponding(where)
+	parent = base.parent()
+	meta_dir = parent.folder_with_name(base.basename()+".meta")
+	return meta_dir
 
 if __name__ == "__main__":
 	print position().__dict__.values()[0].__dict__
