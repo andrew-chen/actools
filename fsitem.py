@@ -284,59 +284,13 @@ def safe_open(path_or_File,mode):
 		return open(path_or_File,mode)
 
 class Line(object):
-	def __init__(self,file,number,text,column=0,original=None):
+	"""
+		an object to represent a line from a file
+	"""
+	def __init__(self,file,number,text):
 		self.file = file
 		self.number = number
 		self.text = text
-		self.column = column
-		if original is None:
-			self.original = self
-		else:
-			self.original = original
-	def clone(self,file=None,number=None,text=None,column=None,original=None,leading_whitespace=None):
-		result = Line(self.file,self.number,self.text,self.column,self.original)
-		if file is None: pass
-		else: result.file = file
-		if number is None: pass
-		else: result.number = number
-		if text is None: pass
-		else: result.text = text
-		if column is None: pass
-		else: result.column = column
-		if original is None: pass
-		else: result.original = original
-		
-		if leading_whitespace is None: pass
-		else
-			try:
-				result.leading_whitespace = self.leading_whitespace
-			except:
-				pass
-			
-		return result
-		
-	def strip_from(self,text):
-		l,m,r = self.text.rpartition(text)
-		result = self.clone()
-		if len(m):
-			result.text = l
-		else:
-			result.text = r
-		return result
-	def strip(self):
-		new_text = self.text.lstrip()
-		leading_whitespace = self.text[0:len(self.original.text) - len(new_text)]
-		column = len(leading_whitespace)
-		result = self.clone(
-			text = new_text.rstrip(),
-			column = column,
-			leading_whitespace = leading_whitespace
-		)
-		return result
-	def __len__(self):
-		return len(self.text)
-	def split(self):
-		return self.text.split()
 
 class File(FSItem):
 	def __init__(self,path):
