@@ -108,11 +108,11 @@ def _test_for(name):
 			f = getattr(obj,methodName)
 			r = f()
 			if r:
-				return 1
+				return True
 			else:
-				return 0
+				return False
 		except:
-			return 0
+			return False
 	return result
 
 global test_for
@@ -126,13 +126,13 @@ def requirer_helper(arg,item):
 			if is_func(item):
 				pass
 			else:
-				return 0
+				return False
 		else:
 			for i in arg:
 				if requirer_helper(arg,item):
 					pass
 				else:
-					return 0		
+					return False		
 	except:
 		try:
 			if isinstance(item,arg):
@@ -140,10 +140,10 @@ def requirer_helper(arg,item):
 			elif issubclass(item,arg):
 				pass
 			else:
-				return 0
+				return False
 		except:
 			pass
-	return 1
+	return False
 			
 def requires(**keywords):
 	"""
@@ -157,12 +157,18 @@ def requires(**keywords):
 	"""
 	class requirer(object):
 		def __setattr__(self,name,value):
+			invoke_super = False
+			raise_error = False
 			try:
 				v = keywords[name]
 				if requirer_helper(v,value):
-					super(requirer,self).__setattr__(name,value)
+					invoke_super = True
 				else:
-					raise ValueError, "violation of requires"
+					raise_error = True
 			except:
+				invoke_super = True
+			if raise_error:
+				raise ValueError, "violation of requires"
+			if invoke_super:
 				super(requirer,self).__setattr__(name,value)
 	return requirer
