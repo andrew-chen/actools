@@ -75,6 +75,12 @@ class TidyAssign(object):
 		
 		Doesn't need to inherit from Callbacker because
 		proxy will callback as necessary
+		
+		TODO:
+			make utility function so usage syntax is:
+				with tidy_assign(object,attr=val):
+					...
+			and thus the need to explicitly make this class or proxy is limited
 	"""
 	def __init__(self,proxy,new_value):
 		self.proxy = proxy
