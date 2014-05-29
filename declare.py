@@ -154,6 +154,12 @@ def requires(**keywords):
 				if a string, must return true to is_***
 				if a class, must pass isinstance
 				if a list, must be true for all elements in it
+				
+		TODO:
+				add
+					"if a set, must be equal to an element of it" (Pascal/C style enum)
+					"if an instance of passes(), passing the item through that function must return True"
+						has this replace the string-based must_return_true_to_ is_ 
 	"""
 	class requirer(object):
 		def __setattr__(self,name,value):
