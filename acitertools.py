@@ -57,7 +57,7 @@ def numbered(iterable):
 	return enumerate(iterable)
 	
 def iteriter(iterable):
-	return itertools.chain.from_iterable(x)
+	return itertools.chain.from_iterable(iterable)
 
 def pad_with(iter1,iter2):
 	count = 0
