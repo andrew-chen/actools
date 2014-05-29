@@ -122,16 +122,60 @@ class CloneableObject(object):
 		supports a clone method that copies all attributes over to the cloned copy
 		
 		subclasses must support default __init__ methods
+			or override _create()
+			or pass any __init__ args into clone before the keyword args
 	"""
-	def clone(self,**kwargs):
+	def _create(self,*args,**kwargs):
 		the_class = self.__class__
-		the_instance = the_class()
+		the_instance = the_class(*args)
+		return the_instance
+	def _transform(self,key,val):
+		return val
+	def clone(self,*args,**kwargs):
+		the_instance = self._create(*args)
 		for key,val in self.__dict__.items():
-			setattr(the_instance,key,val)
+			setattr(the_instance,key,self._transform(key,val))
 		for key,val in kwargs.items():
 			if val is None:
 				pass
 			else:
-				setattr(the_instance,key,val)
+				setattr(the_instance,key,self._transform(key,val))
 		return the_instance
 		
+class DictAdaptor(CloneableObject):
+	"""
+		__init__ takes in keyword arguments of dictionary names,
+		and then from_dict clones and adapts those names from that dict 
+	"""
+	def __init__(*args,**kwargs):
+		"must work if nothing in kwargs as per the CLoneableObject interface"
+		if len(kwargs):
+			self._dict_adaptor_info = kwargs
+		super(DictAdaptor,self).__init__(*args)
+	def from_dict(the_dict):
+		result = self.clone()
+		for key,val in self._dict_adaptor_info:
+			setattr(result,key,the_dict[val])
+		return result
+
+class CloneableWithCopyOptions(CloneableObject):
+	"""
+		since we may want to deepcopy some attributes or not copy some others,
+		this allows us the flexibility to specify which for which attribute
+	"""
+	def __init__(self,*args,**kwargs):
+		self._copy_options = kwargs
+		super(CloneableWithCopyOptions,self).__init__(*args)
+	def _transform(self,key,val):
+		try:
+			return self._copy_options[key](val)
+		except KeyError:
+			return val
+
+"""
+	If we were to subclass from both DictAdaptor and CloneableWithCopyOptions,
+	we would need to have kwargs be a dict of pairs and then transform the dict of pairs into a pair of dicts,
+	and then pass each dict into the respective superclass.
+	
+	Need utilities that transform dicts of pairs into pairs of dicts and vice versus
+"""
