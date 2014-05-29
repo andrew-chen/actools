@@ -12,6 +12,18 @@ def none():
 	"""
 	return None
 
+def true():
+	"""
+		a constructor for True
+	"""
+	return True
+
+def false():
+	"""
+		a constructor for False
+	"""
+	return False
+
 class Callbacker(object):
 	"""
 		A class that can have its instances be weakly referenced,
@@ -92,6 +104,18 @@ class TidyAssign(object):
 	def __exit__(self, exc_type, exc_val, exc_tb):
 		self.proxy.set(self.old_value)
 		return False
+
+def tidy_assign(obj,**kwargs):
+	"""
+		TODO:
+			expand to support multiple kwargs, not just be limited to one
+			OR
+			explain why that isn't something that I'll be doing (more likely)
+	"""
+	assert(1==len(kwargs))
+	p = Proxy(obj,kwargs.keys()[0])
+	result = TidyAssign(p,kwargs.values()[0])
+	return result
 
 class CloneableObject(object):
 	"""
