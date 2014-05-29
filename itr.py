@@ -261,6 +261,25 @@ class _itr(object):
 	def __iter__(self):
 		for item in self.iterable:
 			yield item
+			
+	def dict_of_lists_from(self,key_func=lambda x:x,value_func=lambda x:x):
+		return _dict_of_lists_from(key_func = key_func, value_func = value_func, items = self)
+
+	def print_on_get(self,f=lambda x:x):
+		for item in self:
+			print f(item)
+			yield item
+
+from collections import defaultdict
+
+class _dict_of_lists_from(defaultdict):
+	def __init__(self,items,key_func=lambda x:x,value_func=lambda x:x):
+		super(_dict_of_lists_from,self).__init__(list)
+		for item in items:
+			self[key_func(item)].append(value_func(item))
+
+
+
 
 """ this way, we can do the following:
 
