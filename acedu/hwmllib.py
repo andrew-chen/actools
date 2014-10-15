@@ -127,7 +127,7 @@ class HWML_processor(object):
 		def output(value):
 			if verbose:
 				print value
-			result["value"] = result["value"] + str(value) + "\n"
+			result["value"] = result["value"] + value.encode("ascii","ignore") + "\n"
 
 		for key,value in self.problem_groups.items():
 			book_edition,chapter,problem_number = key
