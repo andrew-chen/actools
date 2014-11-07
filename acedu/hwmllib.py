@@ -44,6 +44,8 @@ class HWML_processor(object):
 		self.homeworks = []
 
 		for homework_file in self.d:
+			if verbose:
+				print "parsing "+homework_file.path
 			try:
 				if homework_file.basename() != ".DS_Store":
 					self.homeworks.append(parse(homework_file.path))
@@ -54,19 +56,26 @@ class HWML_processor(object):
 		self.assignments = []
 
 		for homework in self.homeworks:
-			for assignment in homework.getElementsByTagName("assignment"):
+			homework_assignments = homework.getElementsByTagName("assignment")
+			if 0 == len(homework_assignments):
+				print "Warning, encountered homework that had no assignment."
+				print "outputing assignment"
+				print homework.toprettyxml()
+				sys.exit("Warning, encountered homework that had no assignment.")
+			for assignment in homework_assignments:
 				self.assignments.append(assignment)
 
 		if True:
 			for assignment in self.assignments:
 				attrs = attributesOf(assignment)
-				if verbose: print attrs["student"]
-				if verbose: print attrs["book_edition"]
-				if verbose: print attrs["chapter"]
+				assert(attrs["student"])
+				print (attrs["student"])
+				assert(attrs["book_edition"])
+				assert(attrs["chapter"])
 				problems = assignment.getElementsByTagName("problem")
 				for problem in problems:
 					attrs = attributesOf(problem)
-					if verbose: print attrs["number"]
+					assert(attrs["number"])
 					if verbose: print getText(problem.childNodes)
 
 		self.assignments = map(Assignment,self.assignments)
