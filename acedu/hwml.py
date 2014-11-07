@@ -3,7 +3,7 @@ from acminidom import getText, attributesOf
 class Problem(object):
 	def __init__(self,theNode):
 		attrs = attributesOf(theNode)
-		self.number = attrs["number"]
+		self.number = int(attrs["number"])
 		self.text = getText(theNode.childNodes)
 
 class Assignment(object):
