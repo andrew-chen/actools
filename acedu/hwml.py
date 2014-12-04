@@ -9,7 +9,7 @@ class Problem(object):
 class Assignment(object):
 	def __init__(self,theNode):
 		attrs = attributesOf(theNode)
-		self.student = attrs["student"]
+		self.student = attrs["student"].strip()
 		self.book_edition = int(attrs["book_edition"])
 		self.chapter = int(attrs["chapter"])
 		self.problems = [Problem(problem) for problem in theNode.getElementsByTagName("problem")]
