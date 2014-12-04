@@ -140,7 +140,7 @@ class HWML_processor(object):
 
 		for key,value in self.problem_groups.items():
 			book_edition,chapter,problem_number = key
-			output( "In book edition "+str(book_edition)+" on problem "+problem_number )
+			output( "In book edition "+str(book_edition)+" on problem "+str(problem_number) )
 
 			for item in value:
 				output( "="*50 )
