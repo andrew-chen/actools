@@ -5,7 +5,7 @@ def getText(nodelist):
     for node in nodelist:
         if node.nodeType == node.TEXT_NODE:
             rc.append(node.data)
-    return ''.join(rc)
+    return ' '.join(rc)
 
 def attributesOf(aNode):
         def helper():
