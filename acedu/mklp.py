@@ -23,8 +23,6 @@ if False:
 	todo = """
 
 		Consider having this also generate an iCal file for Jamie and I to subscribe to....
-	
-		Generate the lesson plan files in the reverse order so that their access within TextWrangler will be more appropriate for my needs.
 
 	"""
 
@@ -60,7 +58,7 @@ def mklp(class_meeting_days):
 		classes[name].meeting_days = meeting_days
 		lesson_plan_dir = course.lesson_plans()
 		with open(resource("calendar_data.csv").item.path,"Urb") as cal_file:
-			cal_data = DictReader(cal_file)
+			cal_data = list(reversed(list(DictReader(cal_file))))
 			for day in cal_data:
 				if int(day["Class"]):
 					date_string = day["Day"]+", "+day["Month"]+" "+day["Date"]+", "+str(year)
