@@ -65,9 +65,9 @@ class HWML_processor(object):
 			for assignment in homework_assignments:
 				self.assignments.append(assignment)
 
-		if True:
-			for assignment in self.assignments:
-				attrs = attributesOf(assignment)
+		for assignment in self.assignments:
+			attrs = attributesOf(assignment)
+			try:
 				assert(attrs["student"])
 				print (attrs["student"])
 				assert(attrs["book_edition"])
@@ -77,6 +77,9 @@ class HWML_processor(object):
 					attrs = attributesOf(problem)
 					assert(attrs["number"])
 					if verbose: print getText(problem.childNodes)
+			except:
+				print ("failed on "+str(attrs))
+				raise
 
 		self.assignments = map(Assignment,self.assignments)
 
@@ -217,8 +220,8 @@ def process_problem_scores(code_list,the_file = False):
 		
 def process_hwml():
 	hp = HWML_processor()
-	hp.process_hwml()
+	return hp.process_hwml()
 
 def detect_cheating():
 	hp = HWML_processor()
-	hp.detect_cheating()
+	return hp.detect_cheating()
