@@ -12,6 +12,10 @@ class Assignment(object):
 		self.student = attrs["student"].strip()
 		self.book_edition = int(attrs["book_edition"])
 		self.chapter = int(attrs["chapter"])
-		self.problems = [Problem(problem) for problem in theNode.getElementsByTagName("problem")]
+		try:
+			self.problems = [Problem(problem) for problem in theNode.getElementsByTagName("problem")]
+		except:
+			print "error in processing problems for assignment "+str((self.chapter,self.student))
+			raise
 
 
