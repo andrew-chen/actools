@@ -13,7 +13,6 @@
 			then it is in acitertools,
 """
 
-from historical_context import HistoricalContext
 from collections import deque
 import creating
 import exceptiontools
@@ -219,7 +218,7 @@ class iter_memo(synapse.axon):
 		but along the way, one might "push" other definitions in
 	"""
 	def __init__(self,iterable,remember_all=False):
-		self.iterable = iterable.__iter__()
+		self.iterable = iter(iterable)
 		super(iter_memo,self).__init__(self)
 		self.remember_all = remember_all
 		if self.remember_all:

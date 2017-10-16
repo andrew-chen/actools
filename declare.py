@@ -20,7 +20,12 @@ def initializers(**keywords):
 	class _base(object):
 		def __getattr__(self,name):
 			if keywords.has_key(name):
-					result = keywords[name]()
+					the_initializer = keywords[name]
+					try:
+						result = the_initializer()
+					except:
+						print "error invoking initializer "+str(the_initializer)
+						raise
 					setattr(self,name,result)
 					return result
 			try:

@@ -31,12 +31,15 @@ class HWML_processor(object):
 	def __init__(self):
 		self.prepared = False
 
-	def prepare_for_processing(self,verbose=True):
+	def prepare_for_processing(self,verbose=True,path_sequence=None,ignore_chapter=False):
 	
 		if self.prepared:
 			return self.code_list
 
-		self.d = acedu.paths.corresponding()
+		if path_sequence is None:
+			self.d = acedu.paths.corresponding()
+		else:
+			self.d = path_sequence
 
 		# I need a pretty printer for debugging purposes
 		self.p = pprint.PrettyPrinter(indent=2)
@@ -89,7 +92,9 @@ class HWML_processor(object):
 		#print self.book_editions
 
 		for assignment in self.assignments:
-			if(assignment.chapter != int(sys.argv[1])):
+			if(ignore_chapter):
+				pass
+			elif(assignment.chapter != int(sys.argv[1])):
 				print assignment.student
 				assert(assignment.chapter == int(sys.argv[1]))
 			num_probs = len(assignment.problems)
@@ -225,3 +230,10 @@ def process_hwml():
 def detect_cheating():
 	hp = HWML_processor()
 	return hp.detect_cheating()
+
+def detect_cheating_on_these(list_of_paths):
+	hp = HWML_processor()
+	print "passing in list_of_paths that are "+str(list_of_paths)
+	hp.prepare_for_processing(path_sequence=(map(File,list_of_paths)),ignore_chapter=True)
+	hp.detect_cheating()
+	

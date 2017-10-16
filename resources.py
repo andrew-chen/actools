@@ -14,7 +14,7 @@ class resource(object):
 				if basename == name:
 					self.item = item
 					return
-		raise ValueError, "Not a resource name"
+		raise ValueError, str(name)+" is not a resource name"
 	def data(self):
 		return self.item.read()
 	def lines(self):

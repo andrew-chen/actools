@@ -1,6 +1,6 @@
 import acsetup
 import fsitem
-from decorator import Decorator
+from acdecorator import Decorator
 
 def courses():
 	h = fsitem.home()

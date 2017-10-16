@@ -147,16 +147,27 @@ class DictAdaptor(CloneableObject):
 		__init__ takes in keyword arguments of dictionary names,
 		and then from_dict clones and adapts those names from that dict 
 	"""
-	def __init__(*args,**kwargs):
+	def __init__(self,*args,**kwargs):
 		"must work if nothing in kwargs as per the CLoneableObject interface"
 		if len(kwargs):
 			self._dict_adaptor_info = kwargs
-		super(DictAdaptor,self).__init__(*args)
-	def from_dict(the_dict):
+		try:
+			super(DictAdaptor,self).__init__(*args)
+		except TypeError:
+			pass # if none of the above classes in the hierarchy handle arguments, then we don't know to invoke super here so we don't
+	def from_dict(self,the_dict):
 		result = self.clone()
-		for key,val in self._dict_adaptor_info:
-			setattr(result,key,the_dict[val])
+		for key,val in self._dict_adaptor_info.items():
+			try:
+				setattr(result,key,the_dict[val])
+			except:
+				raise
 		return result
+
+class DictAdaptorAuto(DictAdaptor):
+	"""
+		like DictAdaptor, but from_dict 
+	"""
 
 class CloneableWithCopyOptions(CloneableObject):
 	"""

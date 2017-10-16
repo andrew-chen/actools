@@ -201,7 +201,7 @@ class FSItem(FSPath):
 	def ancestors(self):
 		c = FSItem(self.path)
 		p = c.parent()
-		while c.path is not p.path:
+		while c.path != p.path:
 			yield p
 			c = p
 			p = c.parent()
@@ -296,8 +296,8 @@ class File(FSItem):
 	def __init__(self,path):
 		super(File,self).__init__(path)
 		assert(self.isfile())
-	def read(self):
-		f = open(self.path,"rU")
+	def read(self,args="rU"):
+		f = open(self.path,args)
 		r = f.read()
 		f.close()
 		return r
