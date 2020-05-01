@@ -9,12 +9,12 @@ class qml_entity(object):
 	def end(cls,*args):
 		return "</"+cls.__name__+">" 
 	
-def c(arg):
+def comment(arg):
 	return ""
-def ll(arg):
-	return "all of the above"
-def no(arg):
-	return "none of the above"
+#def ll(arg):
+#	return "all of the above"
+# no(arg):
+#	return "none of the above"
 class QML(qml_entity,Root): pass
 class BODY(qml_entity,belongs_with(QML)): pass
 class HEAD(qml_entity,belongs_with(QML)): pass

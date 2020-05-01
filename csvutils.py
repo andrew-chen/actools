@@ -12,7 +12,7 @@ def trim_keys(a_dict):
 		if len(key) == 0 and len(a_dict[key]) == 0:
 			pass
 		else:
-			new_dict[key.strip()] = a_dict[key]
+			new_dict[key.strip().strip("\xef\xbb\xbf")] = a_dict[key]
 	return new_dict
 
 import acsetup
@@ -24,12 +24,20 @@ def read_csv_file(the_file,**kwargs):
 	da = actypes.DictAdaptor(**kwargs)
 	with fsitem.safe_open(the_file,"Ur") as the_open_file:
 		the_reader = csv.DictReader(the_open_file)
-		for item in the_reader:
-			trimmed = trim_keys(item)
-			try:
-				yield da.from_dict(trimmed)
-			except KeyError:
-				pass
+		try:
+			for item in the_reader:
+				try:
+					trimmed = trim_keys(item)
+				except:
+					print(the_file)
+					raise
+				try:
+					yield da.from_dict(trimmed)
+				except KeyError:
+					pass
+		except:
+			print(the_file)
+			raise
 
 def write_csv_file(the_file,list_of_items,key_ordering=lambda x:sorted(x),**kwargs):
 	"""

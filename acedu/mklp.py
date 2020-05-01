@@ -79,7 +79,7 @@ Lesson Plan for {dayOfWeek}, {month} {day}, {year}
 					date = datetime.strptime(date_string,"%A, %B %d, %Y")
 					date = date.date()
 					if date.isoweekday() in meeting_days:
-						template_data = {"name":name,"semester":course.semester,"year":year,"dayOfWeek":date.strftime("%A"),"month":date.strftime("%B"),"day":date.day}
+						template_data = {"name":name,"semester":course.semester,"year":year,"dayOfWeek":date.strftime("%A"),"month":date.strftime("%B"),"m":date.strftime("%m"),"day":date.day}
 						print(template_data)
 						formatted_data = template.format(**template_data)
 						print(formatted_data)

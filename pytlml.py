@@ -53,7 +53,11 @@ class PyTLML(object):
 		if filename is None:
 			lines = fsitem.fs_object(sys.argv[1]).read_Lines()
 		else:
-			lines = fsitem.fs_object(filename).read_Lines()
+			try:
+				lines = fsitem.fs_object(filename).read_Lines()
+			except AttributeError:
+				print("could not access "+filename)
+				sys.exit(1)
 		if arg:
 			started = False
 		else:
