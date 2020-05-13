@@ -213,10 +213,15 @@ class PyTLML(object):
 		else:
 			if len([char for char in args if char.isspace()]):
 				try:
-					self.handle_text(eval(method+"("+repr(args)+")",self.scope))
+					to_eval = method+"("+repr(args)+")"
+					self.handle_text(eval(to_eval,self.scope))
 				except NameError:
 					print "{number}, '{text}', {file.path}".format(**(self.current_line.__dict__))
 					print "You attempted to call a command that does not exist"
+					raise
+				except TypeError:
+					print "{number}, '{text}', {file.path}".format(**(self.current_line.__dict__))
+					print "Unknown TypeError for trying to eval: "+str(to_eval)
 					raise
 			else:
 				try:
