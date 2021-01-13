@@ -49,6 +49,8 @@ def shortest_paths(start,goal,list_options):
 			index += 1
 
 def shortest_path(start,goal,list_options):
+	if start == goal:
+		return []
 	r = list(shortest_paths(start,goal,list_options))
 	return r[0]
 

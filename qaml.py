@@ -23,7 +23,8 @@ class q(qml_entity,belongs_with(BODY)): pass
 class a(qml_entity,belongs_with(q)): pass
 class correct(qml_entity,belongs_with(q)): pass
 class w(qml_entity,belongs_with(q)): pass
-class code(qml_entity,belongs_with(q)): pass
+#class code(qml_entity,belongs_with(q)): pass
+class code(qml_entity,belongs_with(q,a)): pass
 
 
 

@@ -10,6 +10,9 @@ def invert_options_func(start,options_func):
 				if (t,item) not in data:
 					data.append((t,item),)
 					changed = 1
+	import pprint
+	print("from invert_options_func")
+	pprint.pprint(data)
 	def inverted_helper(x):
 		for item in data:
 			if item[1] == x:

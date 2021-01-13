@@ -44,6 +44,8 @@ class FSPath(object):
 			return r[1:]
 		else:
 			raise IndexError, (other.path,self.path)
+	def __str__(self):
+		return str(self.path)
 	
 	# from os.path
 	def abspath(self):
@@ -291,6 +293,8 @@ class Line(object):
 		self.file = file
 		self.number = number
 		self.text = text
+	def __str__(self):
+		return str(self.file)+":"+str(self.number)+": "+str(self.text)
 
 class File(FSItem):
 	def __init__(self,path):

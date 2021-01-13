@@ -64,7 +64,11 @@ class PyTLML(object):
 			started = True
 		for line in lines:
 			if started:
-				self.handle_line(line)
+				try:
+					self.handle_line(line)
+				except IndexError:
+					print("IndexError on line: "+str(line))
+					raise
 				self.addText("\n")
 			elif line.text.startswith(arg):
 				started = True
@@ -88,7 +92,11 @@ class PyTLML(object):
 	def handle_line(self,line):
 		text = line.text[:-1] # strip off that last newline
 		self.current_line = line
-		self.handle_text(text)
+		try:
+			self.handle_text(text)
+		except IndexError:
+			print("IndexError on line: "+str(line))
+			raise
 	def handle_text(self,text):
 		fragments = text.split("\\")
 		if len(fragments) < 2:
@@ -103,7 +111,11 @@ class PyTLML(object):
 		def process_special(arg):
 			return (None,None,'\\'+arg[0]+arg[2])
 		for command,cmd_parts,plain in escaping.unescape(sentinel_test,items_to_process,process_special):
-			self.handle_command(cmd_parts)
+			try:
+				self.handle_command(cmd_parts)
+			except IndexError:
+				print("IndexError on with text: "+str(text))
+				raise			
 			self.addText(plain)
 
 	def separate_command(self,text):
@@ -146,39 +158,89 @@ class PyTLML(object):
 				print "{number}, '{text}', {file.path}".format(**(self.current_line.__dict__))
 				print "You did not pass in an argument to a command that takes an argument"
 				raise
-			self.begin(method,vv)
+			try:
+				self.begin(method,vv)
+			except IndexError:
+				print("IndexError when trying to begin "+str(method)+" with "+str(vv))
+				raise
 
 	def begin(self,func_name,value,clear=True,meta={}):
+
+		if True: # debugging
+			import pprint
+			pprint.pprint("the func_name is "+str(func_name))
+			pprint.pprint("the class of value is "+str(value.__class__))
+			#print("the stack has ")
+			all_values = self.stack.all_values()
+			for v in all_values:
+				#print(v.as_text())
+				pass
+			#print("end stack")
+
 		result = ""
 		if self.root == None:
 			if value.is_root():
 				self.root = value
 			else:
 				raise SyntaxError, "document did not have an outtermost root element"
-		if not self.stack.empty():
+		elif self.stack.empty():
+			raise SyntaxError, "document has root but stack is empty"
+		else:
 			if self.stack.top_type() == func_name:
-				if clear:
+				if clear: # we're clearing what is on the top, otherwise not
 					result += self.stack.pop_value().end()
 			else:
-				anc = pypdtd.closest_common_ancestor(value.__class__,self.stack.top_value().__class__)
-				self.showText(self.clear_until(anc.__name__))
-				# would need to push any intermediates here....
-				try:
-					to_push = pypdtd.path_to_descendant(anc,value.__class__)
-					to_push = to_push[1:-1] # we don't need what we already have on there, or what we're about to add
-					for item in to_push:
-						i = item()
-						self.showText( i.begin() )
-						self.stack.top_value().addChildContainer(i)
-						self.stack.push(item.__name__,i)
-				except ValueError:
-					# presumably this is because we need to clear some stuff
-					#print anc.__name__,value.__class__.__name__
-					self.showText(self.clear_just_beyond(anc.__name__))					
-				value.meta = meta
+				to_go_on = value.__class__
+				is_on_top = self.stack.top_value().__class__
+				def useful_function(to_go_on,is_on_top):
+					if to_go_on.can_be_within(is_on_top):
+						# we can put it on directly and be done (done after this function)
+						pass
+					else:		
+						# it can be nested within, but can't be put directly on the top
+						# so we need to add stuff
+						to_push = pypdtd.path_to_descendant(is_on_top,to_go_on)
+						for item in to_push:
+							if item == is_on_top:
+								pass
+							elif item == to_go_on:
+								pass
+							else:
+								i = item()
+								self.showText( i.begin() )
+								self.stack.top_value().addChildContainer(i)
+								self.stack.push(item.__name__,i)		
+						# we added everything, now we can put stuff on (done after this function)
+				if to_go_on.can_be_nested_within(is_on_top):
+					useful_function(to_go_on,is_on_top)
+				else:
+					# we have to pop some stuff first
+					anc = pypdtd.closest_common_ancestor(to_go_on,is_on_top)
+					print((to_go_on,is_on_top,anc))
+					print(str(self.stack))
+					# we have to pop anything up to
+					print(anc.__name__)
+					self.showText(self.clear_until(anc.__name__))
+					print(str(self.stack))
+					# if what is on is the same as us, we need to pop it too
+					is_on_top = self.stack.top_value().__class__
+					if to_go_on == is_on_top:
+						# get it off the top
+						self.showText(self.stack.pop_value().end())
+						# since it was okay for it to be on there, we know that it is okay for the next one to be on there too
+					# now that it is cleared, we now need to push stuff on
+					is_on_top = self.stack.top_value().__class__
+					try:
+						assert(to_go_on.can_be_nested_within(is_on_top))
+					except AssertionError:
+						print(to_go_on)
+						print(is_on_top)
+						raise
+					useful_function(to_go_on,is_on_top)									
+					# finally, after getting everything ready, we actually put this on the stack
 			self.stack.top_value().addChildContainer(value)
-		self.stack.push(func_name,value)
 		self.showText( value.begin() )
+		self.stack.push(func_name,value)
 
 	def clear_just_beyond(self,type_name):
 		result = ""
@@ -190,6 +252,28 @@ class PyTLML(object):
 		result = ""
 		for item in self.stack.pop_value_until_type(type_name).end():
 			result += item
+		return result
+
+	def clear_until_including(self,type_name):
+		result = ""
+		for item in self.stack.pop_value_until_and_including_type(type_name).end():
+			result += item
+		return result
+
+	def clear_until_ancestor_of(self,type_name):
+		result = ""
+		print ("in clear_until_ancestor_of with arg "+str(type_name))
+		def condition(t):
+			import pprint
+			print("in condition in clear_until_ancestor_of with t ")
+			pprint.pprint(t)
+			if type_name.can_be_nested_within(t[1].__class__):
+				return False
+			else:
+				return True
+		for item in self.stack.pop_while(condition):
+			import pprint
+			result += item[1].end()
 		return result
 
 	def end(self,type_name,params):

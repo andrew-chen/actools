@@ -10,6 +10,9 @@ class _node(hiertext.TextContainer):
 	def can_be_within(other):
 		return False
 	@staticmethod
+	def can_be_nested_within(other):
+		return False
+	@staticmethod
 	def is_root():
 		return False
 	@staticmethod
@@ -43,6 +46,19 @@ class _node(hiertext.TextContainer):
 			return result
 		else:
 			return "\n".join(result)
+	def all_text(self,should_strip=True,as_list=False):
+		result = []
+		for child in self.leaves():
+			if isinstance(child,hiertext.TextLeaf):
+				s = child.as_text()
+				if should_strip:
+					s = s.strip()
+				if len(s):
+					result.append(s)
+		if as_list:
+			return result
+		else:
+			return "\n".join(result)
 
 class Root(_node):
 	@staticmethod
@@ -56,7 +72,18 @@ def belongs_with(*args):
 			if other in args:
 				return True
 			else:
-				return super(a_class,self).can_be_within(other)
+				return False
+		@staticmethod
+		def can_be_nested_within(other):
+			if other in args:
+				return True
+			elif other.__name__ in args:
+				return True
+			else:
+				for arg in args:
+					if arg.can_be_nested_within(other):
+						return True
+				return False
 		@staticmethod
 		def those_can_be_within():
 			return copy.deepcopy(args)
@@ -71,13 +98,20 @@ def successive_possible_containers(a_node):
 			
 def closest_common_ancestor(x,y):
 	x_list = list(	successive_possible_containers(x))
+	x_list.remove(x)
 	y_list = list(	successive_possible_containers(y))
+	#y_list.remove(y)
 	X = set(x_list)
 	Y = set(y_list)
 	W = X.intersection(Y)
 	enumerated_x_list = enumerate(x_list)
 	chosen = [index for index,element in enumerated_x_list if element in W]
 	return x_list[min(chosen)]
+
+def ancestors(x):
+	x_list = list(	successive_possible_containers(x))
+	x_list.remove(x)
+	return x_list
 
 def path_to_descendant(x,y):
 	inverse = invert_options_func.invert_options_func(y,lambda x: x.those_can_be_within())
